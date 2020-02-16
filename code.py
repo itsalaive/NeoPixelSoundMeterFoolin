@@ -36,6 +36,7 @@ PEAK_COLOR = (100, 0, 255)
 # Number of total pixels - 10 build into Circuit Playground
 NUM_PIXELS = 10
 NUM_PIXELS2 = 16
+TOT_PIXELS = 26
 
 # Exponential scaling factor.
 # Should probably be in range -10 .. 10 to be reasonable.
@@ -79,6 +80,10 @@ def volume_color(volume, pixnum):
     return 200, volume * (255 // pixnum), 0
 
 
+
+
+
+
 # Main program
 
 # Set up NeoPixels and turn them all off.
@@ -116,39 +121,50 @@ while True:
     mic.record(samples, len(samples))
     magnitude = normalized_rms(samples)
     # You might want to print this to see the values.
-    # print(magnitude)
+    print(magnitude)
 
     # Compute scaled logarithmic reading in the range 0 to NUM_PIXELS
-    c = log_scale(constrain(magnitude, input_floor, input_ceiling),
-                  input_floor, input_ceiling, 0, NUM_PIXELS)
-    c2 = log_scale(constrain(magnitude, input_floor, input_ceiling),
-                  input_floor, input_ceiling, 0, NUM_PIXELS2)
+    c = int(log_scale(constrain(magnitude, input_floor, input_ceiling),
+                  input_floor, input_ceiling, 0, TOT_PIXELS))
+#    c2 = log_scale(constrain(magnitude, input_floor, input_ceiling2),
+#                  input_floor, input_ceiling2, 0, NUM_PIXELS2)
+    print(c)
 
     # Light up pixels that are below the scaled and interpolated magnitude.
     pixels.fill(0)
-    for i in range(NUM_PIXELS):
+    pixels2.fill(0)
+    for i in range(TOT_PIXELS-1):
         if i < c:
-            pixels[i] = volume_color(i, NUM_PIXELS)
+            if i > 9:
+                j = i-10
+                pixels2[j] = volume_color(j, NUM_PIXELS2)
+            else:
+                pixels[i] = volume_color(i, NUM_PIXELS)
         # Light up the peak pixel and animate it slowly dropping.
         if c >= peak:
-            peak = min(c, NUM_PIXELS - 1)
+            peak = min(c, TOT_PIXELS - 1)
         elif peak > 0:
             peak = peak - 1
         if peak > 0:
-            pixels[int(peak)] = PEAK_COLOR
+            if peak > 9:
+                peak2 = peak-10
+                pixels2[int(peak2)] = PEAK_COLOR
+            else:
+                pixels[int(peak)] = PEAK_COLOR
     pixels.show()
-    pixels2.fill(0)
-    for i in range(NUM_PIXELS2):
-        if i < c2:
-            pixels2[i] = volume_color(i, NUM_PIXELS2)
-        # Light up the peak pixel and animate it slowly dropping.
-        if c2 >= peak2:
-            peak2 = min(c, NUM_PIXELS2 - 1)
-        elif peak2 > 0:
-            peak2 = peak2 - 1
-        if peak2 > 0:
-            pixels2[int(peak)] = PEAK_COLOR
     pixels2.show()
+#    pixels2.fill(0)
+#    for i in range(NUM_PIXELS2):
+#        if i < c2:
+#            pixels2[i] = volume_color(i, NUM_PIXELS2)
+#        # Light up the peak pixel and animate it slowly dropping.
+#        if c2 >= peak2:
+#            peak2 = min(c, NUM_PIXELS2 - 1)
+#        elif peak2 > 0:
+#            peak2 = peak2 - 1
+#        if peak2 > 0:
+#            pixels2[int(peak)] = PEAK_COLOR
+#    pixels2.show()
 
 
  #   color_chase((random.randint(0, 255),random.randint(0, 255),random.randint(0, 255)), 0.2);
