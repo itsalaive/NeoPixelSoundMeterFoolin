@@ -33,9 +33,10 @@ import neopixel
 
 # Color of the peak pixel.
 PEAK_COLOR = (100, 0, 255)
-# Number of total pixels - 10 build into Circuit Playground
+# Number of pixels on each Neopixel ring, starting with the onboard one
 NUM_PIXELS = 10
 NUM_PIXELS2 = 16
+# Number of total pixels - 10 build into Circuit Playground, + however many extra neopixels you connect
 TOT_PIXELS = 26
 
 # Exponential scaling factor.
@@ -133,10 +134,13 @@ while True:
     # Light up pixels that are below the scaled and interpolated magnitude.
     pixels.fill(0)
     pixels2.fill(0)
+    # Neopixels start at address 0, so we subtract 1 from the number of total pixels to accurately address the right pixels, otherwise it breaks!
     for i in range(TOT_PIXELS-1):
         if i < c:
+            # If the Neopixel being addressed is over 9 it means it needs to start sending commands to the auxiliary Neopixel ring on A2
             if i > 9:
-                j = i-10
+                # The Neopixels on the Board light up Anti-clockwise, so a simple math trick reverses the direction in which the auxiliary Neopixel Ring pixels light up create a continuous spiral effect.
+                j = 15 - (i-10)
                 pixels2[j] = volume_color(j, NUM_PIXELS2)
             else:
                 pixels[i] = volume_color(i, NUM_PIXELS)
@@ -145,27 +149,12 @@ while True:
             peak = min(c, TOT_PIXELS - 1)
         elif peak > 0:
             peak = peak - 1
+        # Sets up the Decay sequence to have the Neopixels turn off, once again addressing the Aux Neopixel Ring if the pixel being addressed is over 10
         if peak > 0:
             if peak > 9:
-                peak2 = peak-10
+                peak2 = 15 - (peak-10)
                 pixels2[int(peak2)] = PEAK_COLOR
             else:
                 pixels[int(peak)] = PEAK_COLOR
     pixels.show()
     pixels2.show()
-#    pixels2.fill(0)
-#    for i in range(NUM_PIXELS2):
-#        if i < c2:
-#            pixels2[i] = volume_color(i, NUM_PIXELS2)
-#        # Light up the peak pixel and animate it slowly dropping.
-#        if c2 >= peak2:
-#            peak2 = min(c, NUM_PIXELS2 - 1)
-#        elif peak2 > 0:
-#            peak2 = peak2 - 1
-#        if peak2 > 0:
-#            pixels2[int(peak)] = PEAK_COLOR
-#    pixels2.show()
-
-
- #   color_chase((random.randint(0, 255),random.randint(0, 255),random.randint(0, 255)), 0.2);
-    #color_chase((random.randint(0, 255),random.randint(0, 255),random.randint(0, 255)), 0.2);
